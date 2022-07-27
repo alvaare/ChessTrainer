@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "ChessTrainer"
+name = "chess_trainer"
 version = "0.1.0"
