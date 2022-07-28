@@ -1,8 +1,4 @@
-#[derive(Clone, Copy, Debug)]
-pub enum Color {
-    WHITE,
-    BLACK
-}
+use crate::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Piece {
@@ -16,7 +12,7 @@ pub enum Piece {
 
 impl Piece {
     pub fn from_char(c : &u8) -> Option<Self> {
-        let color = if (*c as char).is_uppercase() {Color::WHITE} else {Color::BLACK};
+        let color = if (*c as char).is_uppercase() {WHITE} else {BLACK};
         let up_c = (*c as char).to_ascii_uppercase();
         match up_c {
             'P' => Some(Piece::PAWN(color)),

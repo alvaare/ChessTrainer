@@ -1,9 +1,4 @@
-use crate::piece::{*};
-use crate::piece::Piece::*;
-use crate::piece::Color::*;
-
-const BOARD_SIZE : usize = 8;
-type Coord = (usize, usize);
+use crate::{Piece::*, *};
 
 pub fn from_str_to_coord(s: &str) -> Option<Coord> {
     if s.len()!=2 {return None;}
@@ -89,8 +84,8 @@ impl Board {
 
     fn read_turn(&mut self, fen: &str) {
         self.turn = match fen {
-            "b" => Color::BLACK,
-            "w" => Color::WHITE,
+            "b" => BLACK,
+            "w" => WHITE,
             _ => panic!("The turn must be b or w")
         }
     }
