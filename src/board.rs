@@ -49,4 +49,28 @@ impl Board {
         board.set_line(6, Some(PAWN(BLACK)));
         board
     }
+
+    fn read_rank(&mut self, fen: &[u8], id_rank: usize, id_char: &mut usize) {
+        let mut id_col : usize = 0;
+        loop {
+            println!("{}", fen[*id_char] as char);
+            match fen[*id_char] {
+                b'/' | b' ' => return,
+                b'1'..=b'8' => id_col += ((fen[*id_char] as char).to_digit(10).unwrap() -1) as usize,
+                c => self.set((id_rank, id_col), Piece::from_char(&c))
+            }
+            id_col += 1;
+            *id_char += 1;
+        }
+    }
+
+    pub fn from_fen(fen: &[u8]) -> Self {
+        let mut board = Board::new();
+        let mut id_char : usize = 0;
+        for id_rank in 1..=8 {
+            board.read_rank(&fen, 8-id_rank, &mut id_char);
+            id_char += 1;
+        }
+        board
+    }
 }
