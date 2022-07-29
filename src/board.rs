@@ -1,12 +1,4 @@
-use crate::{Piece::*, *};
-
-pub fn from_str_to_coord(s: &str) -> Option<Coord> {
-    if s.len()!=2 {return None;}
-    let mut s = s.bytes();
-    Some(((s.nth(0).unwrap() - 'a' as u8).into(),
-    ((s.nth(1).unwrap() as char).to_digit(10).unwrap() -1) as usize))
-}
-
+use crate::*;
 
 #[derive(Debug)]
 pub struct Board {

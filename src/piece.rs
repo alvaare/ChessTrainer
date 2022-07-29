@@ -1,6 +1,7 @@
 use crate::*;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Piece {
     KING(Color),
     QUEEN(Color),
