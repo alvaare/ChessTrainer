@@ -5,7 +5,7 @@ pub struct Board {
     position: [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE],
     turn: Color,
     castlings: [bool; 4],
-    en_passant: Option<Coord>,
+    pub en_passant: Option<Coord>,
     halfmove_clock: usize,
     move_count: usize
 }

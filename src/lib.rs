@@ -7,7 +7,7 @@ pub enum Color {
     BLACK
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub struct Coord(isize, isize);
 
 pub fn from_str_to_coord(s: &str) -> Option<Coord> {
