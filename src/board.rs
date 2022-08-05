@@ -1,4 +1,5 @@
 use crate::*;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct Board {
@@ -163,5 +164,34 @@ impl Board {
             Some(p) => p.color != *color,
             _ => false
         }
+    }
+
+    pub fn do_move(&mut self, chess_move: &ChessMove) {
+        self.set(chess_move.start, None);
+        self.set(chess_move.end, Some(chess_move.piece));
+        self.turn = change_color(&self.turn);
+        if self.turn == Color::WHITE {
+            self.move_count += 1;
+        }
+    }
+}
+
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for line in self.position {
+            let mut disp = String::new();
+            for square in line {
+                if let Some(p) = square {
+                    disp.push(p.get_unicode());
+                }
+                else {
+                    disp.push('.');
+                }
+            }
+            disp.push('\n');
+            let res = write!(f, "{}", disp);
+            if res.is_err() {return res}
+        }   
+        Ok(())
     }
 }

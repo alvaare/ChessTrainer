@@ -20,8 +20,12 @@ fn main() {
     // let mut my_opening = OpeningTree::load(opening_file);
     // my_opening.add_d4();
     // my_opening.save(opening_file);
-    let board = Board::default();
-    let av_moves = board.available_moves();
-    println!("{:?}", av_moves);
-    println!("{:?}", av_moves.len());
+
+    // let board = Board::default();
+    // let av_moves = board.available_moves();
+    // println!("{:?}", av_moves);
+    // println!("{:?}", av_moves.len());
+
+    let game = Game::random();
+    println!("{:?}", game);
 }

@@ -52,6 +52,18 @@ impl PieceType {
             _ => None
         }
     }
+
+    fn get_char(&self) -> Option<u8> {
+        match self {
+            PAWN => None,
+            KNIGHT => Some('N' as u8),
+            BISHOP => Some('B' as u8),
+            ROOK => Some('R' as u8),
+            QUEEN => Some('Q' as u8),
+            KING => Some('K' as u8)
+        }
+    }
+
 }
 
 impl Piece {
@@ -63,6 +75,28 @@ impl Piece {
             None => None
         }
     } 
+
+    pub fn get_notation(&self) -> Option<u8> {
+        self.piece_type.get_char()
+    }
+
+    pub fn get_unicode(&self) -> char {
+        match (self.piece_type, self.color) {
+            (PAWN, WHITE) => '\u{2659}',
+            (PAWN, BLACK) => '\u{265F}',
+            (KNIGHT, WHITE) => '\u{2658}',
+            (KNIGHT, BLACK) => '\u{265E}',
+            (BISHOP, WHITE) => '\u{2657}',
+            (BISHOP, BLACK) => '\u{265D}',
+            (ROOK, WHITE) => '\u{2656}',
+            (ROOK, BLACK) => '\u{265C}',
+            (QUEEN, WHITE) => '\u{2655}',
+            (QUEEN, BLACK) => '\u{265B}',
+            (KING, WHITE) => '\u{2654}',
+            (KING, BLACK) => '\u{265A}',
+
+        }
+    }
 }
 
 pub trait CanMove {
@@ -197,7 +231,10 @@ impl Piece {
         match self.piece_type {
             PAWN => Pawn::available_moves(board, coord, &self.color),
             KNIGHT => Knight::available_moves(board, coord, &self.color),
-            _ => Vec::new()
+            BISHOP => Bishop::available_moves(board, coord, &self.color),
+            ROOK => Rook::available_moves(board, coord, &self.color),
+            QUEEN => Queen::available_moves(board, coord, &self.color),
+            KING => King::available_moves(board, coord, &self.color)
         }
     }
 }
