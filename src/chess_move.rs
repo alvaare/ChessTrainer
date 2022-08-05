@@ -3,9 +3,9 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChessMove {
-    piece: Piece,
-    start: Coord,
-    end: Coord
+    pub piece: Piece,
+    pub start: Coord,
+    pub end: Coord
 }
 
 impl ChessMove {

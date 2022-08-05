@@ -1,19 +1,48 @@
 use serde::{Serialize, Deserialize};
-#
+use std::ops::{Add, Mul};
 
-[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum Color {
     WHITE,
     BLACK
 }
 
-type Coord = (usize, usize);
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+pub struct Coord(isize, isize);
 
 pub fn from_str_to_coord(s: &str) -> Option<Coord> {
     if s.len()!=2 {return None;}
-    let mut s = s.as_bytes();
-    Some(((s[0]- 'a' as u8).into(),
-    ((s[1] as char).to_digit(10).unwrap() -1) as usize))
+    let s = s.as_bytes();
+    Some(Coord((s[0]- 'a' as u8) as isize,
+    ((s[1] as char).to_digit(10).unwrap() -1) as isize))
+}
+
+impl Coord {
+    pub fn is_correct(&self) -> bool {
+        self.0 >= 0 && self.0 < 8 && self.1 >= 0 && self.1 < 8
+    }
+}
+
+impl From<(i32, i32)> for Coord {
+    fn from(input: (i32, i32)) -> Coord {
+        Coord(input.0 as isize, input.1 as isize)
+    }
+}
+
+impl Add for Coord {
+    type Output = Coord; 
+
+    fn add(self, other: Coord) -> Coord {
+        Coord(self.0+other.0, self.1+other.1)
+    }
+}
+
+impl Mul<isize> for Coord {
+    type Output = Coord;
+
+    fn mul(self, other: isize) -> Coord {
+        Coord(self.0*other, self.1*other)
+    }
 }
 
 pub const BOARD_SIZE : usize = 8;
@@ -30,10 +59,10 @@ mod board;
 pub use board::Board;
 
 mod piece;
-pub use piece::{Piece, Piece::*};
+pub use piece::{Piece, PieceType::*, PieceWrapper};
 
-mod game;
-pub use game::Game;
+// mod game;
+// pub use game::Game;
 
 mod chess_move;
 pub use chess_move::ChessMove;

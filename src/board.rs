@@ -23,45 +23,53 @@ impl Board {
     }
 
     fn set(&mut self, coord: Coord, piece: Option<Piece>) {
-        self.position[coord.0][coord.1] = piece;
+        if coord.is_correct() {
+            self.position[coord.0 as usize][coord.1 as usize] = piece;
+        }
     }
 
-    fn set_line(&mut self, id_line: usize, piece: Option<Piece>) {
+    fn set_piece(&mut self, coord: Coord, piece: PieceWrapper) {
+        if coord.is_correct() {
+            self.position[coord.0 as usize][coord.1 as usize] = Some(Piece{piece_type: piece.0, color: piece.1});
+        }
+    }
+
+    fn set_line(&mut self, id_line: usize, piece: PieceWrapper) {
         for id_column in 0..BOARD_SIZE {
-            self.position[id_line][id_column] = piece;
+            self.position[id_line][id_column] = Some(Piece{piece_type: piece.0, color: piece.1});
         }
     }
 
     pub fn default() -> Self {
         let mut board = Board::new();
-        board.set((0,0), Some(ROOK(WHITE)));
-        board.set((0,1), Some(KNIGHT(WHITE)));
-        board.set((0,2), Some(BISHOP(WHITE)));
-        board.set((0,3), Some(QUEEN(WHITE)));
-        board.set((0,4), Some(KING(WHITE)));
-        board.set((0,5), Some(BISHOP(WHITE)));
-        board.set((0,6), Some(KNIGHT(WHITE)));
-        board.set((0,7), Some(ROOK(WHITE)));
-        board.set((7,0), Some(ROOK(BLACK)));
-        board.set((7,1), Some(KNIGHT(BLACK)));
-        board.set((7,2), Some(BISHOP(BLACK)));
-        board.set((7,3), Some(QUEEN(BLACK)));
-        board.set((7,4), Some(KING(BLACK)));
-        board.set((7,5), Some(BISHOP(BLACK)));
-        board.set((7,6), Some(KNIGHT(BLACK)));
-        board.set((7,7), Some(ROOK(BLACK)));
-        board.set_line(1, Some(PAWN(WHITE)));
-        board.set_line(6, Some(PAWN(BLACK)));
+        board.set_piece(Coord(0,0), (ROOK,WHITE));
+        board.set_piece(Coord(0,1), (KNIGHT,WHITE));
+        board.set_piece(Coord(0,2), (BISHOP,WHITE));
+        board.set_piece(Coord(0,3), (QUEEN,WHITE));
+        board.set_piece(Coord(0,4), (KING,WHITE));
+        board.set_piece(Coord(0,5), (BISHOP,WHITE));
+        board.set_piece(Coord(0,6), (KNIGHT,WHITE));
+        board.set_piece(Coord(0,7), (ROOK,WHITE));
+        board.set_piece(Coord(7,0), (ROOK,BLACK));
+        board.set_piece(Coord(7,1), (KNIGHT,BLACK));
+        board.set_piece(Coord(7,2), (BISHOP,BLACK));
+        board.set_piece(Coord(7,3), (QUEEN,BLACK));
+        board.set_piece(Coord(7,4), (KING,BLACK));
+        board.set_piece(Coord(7,5), (BISHOP,BLACK));
+        board.set_piece(Coord(7,6), (KNIGHT,BLACK));
+        board.set_piece(Coord(7,7), (ROOK,BLACK));
+        board.set_line(1, (PAWN,WHITE));
+        board.set_line(6, (PAWN,BLACK));
         board
     }
 
-    fn read_rank(&mut self, rank: &str, id_rank: usize) {
-        let mut id_col : usize = 0;
+    fn read_rank(&mut self, rank: &str, id_rank: isize) {
+        let mut id_col: isize = 0;
         for c in rank.bytes() {
             match c {
                 b'/' | b' ' => return,
-                b'1'..=b'8' => id_col += ((c as char).to_digit(10).unwrap() -1) as usize,
-                c => self.set((id_rank, id_col), Piece::from_char(&c))
+                b'1'..=b'8' => id_col += ((c as char).to_digit(10).unwrap() -1) as isize,
+                c => self.set(Coord(id_rank, id_col), Piece::from_char(&c))
             }
             id_col += 1;
         }
@@ -70,7 +78,7 @@ impl Board {
     fn read_ranks(&mut self, fen: &str) {
         let ranks = fen.split('/');
         for (id_rank, rank) in ranks.enumerate() {
-            self.read_rank(rank, 7-id_rank);
+            self.read_rank(rank, (7-id_rank) as isize);
         }
     }
 
@@ -120,5 +128,40 @@ impl Board {
         board.read_clock(vec[4]);
         board.read_move(vec[5]);
         board
+    }
+
+    pub fn available_moves(&self) -> Vec<ChessMove> {
+        let mut av_moves = Vec::<ChessMove>::new();
+        for (i, line) in self.position.iter().enumerate() {
+            for (j, piece) in line.iter().enumerate() {
+                if let Some(p) = piece {
+                    if p.color == self.turn {
+                        av_moves.append(&mut p.available_moves(&self, &Coord(i as isize,j as isize)));
+                    }
+                }
+            }
+        }
+        av_moves
+    }
+
+    pub fn is_square_free(&self, coord: &Coord) -> bool {
+        if !coord.is_correct() {return false}
+        self.position[coord.0 as usize][coord.1 as usize].is_none()
+    }
+
+    pub fn color_is(&self, coord: &Coord, color: &Color) -> bool {
+        if !coord.is_correct() {return false}
+        match self.position[coord.0 as usize][coord.1 as usize] {
+            Some(p) => p.color == *color,
+            _ => false
+        }
+    }
+
+    pub fn can_capture(&self, coord: &Coord, color: &Color) -> bool {
+        if !coord.is_correct() {return false}
+        match self.position[coord.0 as usize][coord.1 as usize] {
+            Some(p) => p.color != *color,
+            _ => false
+        }
     }
 }
