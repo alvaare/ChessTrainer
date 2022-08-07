@@ -119,7 +119,7 @@ impl Board {
         self.move_count = fen.parse().unwrap();
     }
 
-    pub fn from_fen(fen: &str) -> Self {
+    pub fn from_fen(fen: &FEN) -> Self {
         let mut board = Board::new();
         let vec: Vec<&str> = fen.split_whitespace().collect();
         board.read_ranks(vec[0]);
@@ -173,6 +173,41 @@ impl Board {
         if self.turn == Color::WHITE {
             self.move_count += 1;
         }
+    }
+
+    fn get_rank(&self, id_rank: usize) -> String {
+        let mut res = String::new();
+        let mut acc = 0;
+        for square in self.position[id_rank] {
+            match square {
+                Some(piece) =>  {if acc>0 {
+                                            res.push((('0' as u8) + acc) as char);
+                                       }
+                                        res.push(piece.to_char() as char); 
+                                    }
+                None => acc += 1
+            }
+        }
+        if acc>0 {
+            res.push((('0' as u8) + acc) as char);
+        }
+        res
+    }
+
+    fn get_ranks(&self) -> String {
+        let mut res = String::new();
+        for i in 0..8 {
+            res.push_str(&self.get_rank(7-i));
+            if i != 7 {
+                res.push('/');
+            }
+        }
+        res
+    }
+
+    pub fn to_fen(&self) -> FEN {
+        let ranks = self.get_ranks(); //to finish
+        ranks
     }
 }
 

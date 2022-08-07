@@ -85,6 +85,8 @@ pub enum Result {
     Draw
 }
 
+pub type FEN = String;
+
 mod board;
 pub use board::Board;
 

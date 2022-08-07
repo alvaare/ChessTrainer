@@ -20,24 +20,12 @@ pub struct Piece {
     pub color: Color
 }
 
-struct Pawn {
-    color: Color
-}
-struct Knight {
-    color: Color
-}
-struct Bishop {
-    color: Color
-}
-struct Rook {
-    color: Color
-}
-struct Queen {
-    color: Color
-}
-struct King {
-    color: Color
-}
+struct Pawn;
+struct Knight;
+struct Bishop;
+struct Rook;
+struct Queen;
+struct King;
 
 impl PieceType {
     fn from_char(c: &u8) -> Option<Self> {
@@ -53,14 +41,14 @@ impl PieceType {
         }
     }
 
-    fn get_char(&self) -> Option<u8> {
+    fn get_char(&self) -> u8 {
         match self {
-            PAWN => None,
-            KNIGHT => Some('N' as u8),
-            BISHOP => Some('B' as u8),
-            ROOK => Some('R' as u8),
-            QUEEN => Some('Q' as u8),
-            KING => Some('K' as u8)
+            PAWN => 'P' as u8,
+            KNIGHT => 'N' as u8,
+            BISHOP => 'B' as u8,
+            ROOK => 'R' as u8,
+            QUEEN => 'Q' as u8,
+            KING => 'K' as u8
         }
     }
 
@@ -77,7 +65,18 @@ impl Piece {
     } 
 
     pub fn get_notation(&self) -> Option<u8> {
-        self.piece_type.get_char()
+        match self.piece_type.get_char() {
+            b'P' => None,
+            c => Some(c)
+        }
+    }
+
+    pub fn to_char(&self) -> u8 {
+        let c = self.piece_type.get_char();
+        match self.color {
+            BLACK => c.to_ascii_lowercase(),
+            WHITE => c
+        }
     }
 
     pub fn get_unicode(&self) -> char {
@@ -143,7 +142,7 @@ impl CanMove for Knight {
         let mut moves = Vec::<ChessMove>::new();
         for dir in KNIGHT_DIRS {
             let new_coord = *coord+dir;
-            if board.is_square_free(&new_coord) || board.can_capture(coord, color) {
+            if board.is_square_free(&new_coord) || board.can_capture(&new_coord, color) {
                 moves.push(ChessMove {piece: Piece{piece_type: KNIGHT, color: *color}, start: *coord, end: new_coord});
             }
         }
@@ -160,7 +159,7 @@ impl CanMove for Bishop {
         for dir in BISHOP_DIRS {
             for nb_squares in 1..8 {
                 let new_coord = *coord+dir*nb_squares;
-                if board.is_square_free(&new_coord) || board.can_capture(coord, color) {
+                if board.is_square_free(&new_coord) || board.can_capture(&new_coord, color) {
                     moves.push(ChessMove {piece: Piece{piece_type: BISHOP, color: *color}, start: *coord, end: new_coord});
                 }
                 if !board.is_square_free(&new_coord) {
@@ -180,7 +179,7 @@ impl CanMove for Rook {
         for dir in ROOK_DIRS {
             for nb_squares in 1..8 {
                 let new_coord = *coord+dir*nb_squares;
-                if board.is_square_free(&new_coord) || board.can_capture(coord, color) {
+                if board.is_square_free(&new_coord) || board.can_capture(&new_coord, color) {
                     moves.push(ChessMove {piece: Piece{piece_type: ROOK, color: *color}, start: *coord, end: new_coord});
                 }
                 if !board.is_square_free(&new_coord) {
@@ -200,7 +199,7 @@ impl CanMove for Queen {
         for dir in QUEEN_DIRS {
             for nb_squares in 1..8 {
                 let new_coord = *coord+dir*nb_squares;
-                if board.is_square_free(&new_coord) || board.can_capture(coord, color) {
+                if board.is_square_free(&new_coord) || board.can_capture(&new_coord, color) {
                     moves.push(ChessMove {piece: Piece{piece_type: QUEEN, color: *color}, start: *coord, end: new_coord});
                 }
                 if !board.is_square_free(&new_coord) {
@@ -215,10 +214,10 @@ impl CanMove for Queen {
 impl CanMove for King {
     fn available_moves(board: &Board, coord: &Coord, color: &Color) -> Vec<ChessMove> {
         let mut moves = Vec::<ChessMove>::new();
-        for dir in BISHOP_DIRS {
+        for dir in QUEEN_DIRS {
             let new_coord = *coord+dir;
-            if board.is_square_free(&new_coord) || board.can_capture(coord, color) {
-                moves.push(ChessMove {piece: Piece{piece_type: BISHOP, color: *color}, start: *coord, end: new_coord});
+            if board.is_square_free(&new_coord) || board.can_capture(&new_coord, color) {
+                moves.push(ChessMove {piece: Piece{piece_type: KING, color: *color}, start: *coord, end: new_coord});
             }
         }
         moves

@@ -9,13 +9,13 @@ pub struct ChessMove {
 }
 
 impl ChessMove {
-    pub fn new(piece: Piece, start: &str, end: &str) -> Self {
-        ChessMove {
-            piece,
-            start: from_str_to_coord(start).unwrap(), 
-            end: from_str_to_coord(end).unwrap()
-        }
-    }
+    // pub fn new(piece: Piece, start: &str, end: &str) -> Self {
+    //     ChessMove {
+    //         piece,
+    //         start: from_str_to_coord(start).unwrap(), 
+    //         end: from_str_to_coord(end).unwrap()
+    //     }
+    // }
 
     pub fn notation(&self) -> String {
         let mut res = String::new();

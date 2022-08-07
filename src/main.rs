@@ -26,6 +26,9 @@ fn main() {
     // println!("{:?}", av_moves);
     // println!("{:?}", av_moves.len());
 
-    let game = Game::random();
-    println!("{:?}", game);
+    // let game = Game::random(); \\Only basic rules
+    // println!("{:?}", game);
+
+    let board = Board::default();
+    println!("{}", board.to_fen());
 }
