@@ -175,7 +175,7 @@ impl Board {
         }
     }
 
-    fn get_rank(&self, id_rank: usize) -> String {
+    fn write_rank(&self, id_rank: usize) -> String {
         let mut res = String::new();
         let mut acc = 0;
         for square in self.position[id_rank] {
@@ -194,10 +194,10 @@ impl Board {
         res
     }
 
-    fn get_ranks(&self) -> String {
+    fn write_ranks(&self) -> String {
         let mut res = String::new();
         for i in 0..8 {
-            res.push_str(&self.get_rank(7-i));
+            res.push_str(&self.write_rank(7-i));
             if i != 7 {
                 res.push('/');
             }
@@ -205,9 +205,57 @@ impl Board {
         res
     }
 
+    fn write_turn(&self) -> String {
+        match self.turn {
+            WHITE => "w".to_string(),
+            BLACK => "b".to_string()
+        }
+    }
+
+    fn write_castlings(&self) -> String {
+        if self.castlings == [false; 4] {
+            return "-".to_string();
+        }
+        let mut res = String::new();
+        if self.castlings[0] {res.push('K');}
+        if self.castlings[1] {res.push('Q');}
+        if self.castlings[2] {res.push('k');}
+        if self.castlings[3] {res.push('q');}
+        res
+    }
+
+    fn write_en_passant(&self) -> String {
+        if let Some(sq) = self.en_passant {
+            sq.get_str()
+        }
+        else {
+            "-".to_string()
+        }
+    }
+
     pub fn to_fen(&self) -> FEN {
-        let ranks = self.get_ranks(); //to finish
-        ranks
+        let mut fen: FEN = FEN::new();
+        const SEPARATOR: char = ' ';
+
+        fen.push_str(&self.write_ranks());
+        fen.push(SEPARATOR);
+
+        fen.push_str(&self.write_turn());
+        fen.push(SEPARATOR);
+
+        fen.push_str(&self.write_castlings());
+        fen.push(SEPARATOR);
+
+        fen.push_str(&self.write_en_passant());
+        fen.push(SEPARATOR);
+
+        fen.push_str(&self.halfmove_clock.to_string());
+        fen.push(SEPARATOR);
+
+        fen.push_str(&self.move_count.to_string());
+        fen
+
+        
     }
 }
 
