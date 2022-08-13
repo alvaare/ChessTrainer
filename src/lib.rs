@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use std::ops::{Add, Mul};
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Color {
     WHITE,
     BLACK
@@ -14,26 +14,18 @@ pub fn change_color(color: &Color) -> Color {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Coord(isize, isize);
-
-pub fn from_str_to_coord(s: &str) -> Option<Coord> {
-    if s.len()!=2 {return None;}
-    let s = s.as_bytes();
-    Some(Coord((s[0]- 'a' as u8) as isize,
-    ((s[1] as char).to_digit(10).unwrap() -1) as isize))
-}
 
 impl Coord {
     pub fn is_correct(&self) -> bool {
         self.0 >= 0 && self.0 < 8 && self.1 >= 0 && self.1 < 8
     }
 
-    pub fn from_str(s: &str) -> Option<Coord> {
+    pub fn from_str(s: &[u8]) -> Option<Coord> {
         if s.len()!=2 {return None;}
-        let s = s.as_bytes();
-        Some(Coord((s[0]- 'a' as u8) as isize,
-        ((s[1] as char).to_digit(10).unwrap() -1) as isize))
+        Some(Coord((s[0]- b'a') as isize,
+            (s[1]-b'0' -1) as isize))
     }
 
     pub fn get_char_column(&self) -> u8 {
@@ -44,10 +36,10 @@ impl Coord {
         (('1' as isize) + self.0) as u8
     }
 
-    pub fn get_str(&self) -> String {
-        let mut res = String::new();
-        res.push(self.get_char_column() as char);
-        res.push(self.get_char_line() as char);
+    pub fn get_str(&self) -> Vec<u8> {
+        let mut res = vec![];
+        res.push(self.get_char_column());
+        res.push(self.get_char_line());
         res
     }
 }
@@ -85,7 +77,7 @@ pub enum Result {
     Draw
 }
 
-pub type FEN = String;
+pub type FEN = Vec<u8>;
 
 mod board;
 pub use board::Board;

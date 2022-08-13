@@ -32,11 +32,6 @@ impl Game {
             let chess_move = chess_move.unwrap();
             game.moves.push(*chess_move);
             board.do_move(&chess_move);
-            println!("{:?}", chess_move);
-            println!("{}", chess_move.notation());
-            println!("{}", &board);
-            println!("\n");
-            
         }
         game.result = Some(Result::Draw);
         game

@@ -1,7 +1,7 @@
 use crate::*;
 use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum PieceType {
     KING,
     QUEEN,
@@ -13,7 +13,7 @@ pub enum PieceType {
 
 pub type PieceWrapper = (PieceType,Color);
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 
 pub struct Piece {
     pub piece_type : PieceType,
@@ -28,7 +28,7 @@ struct Queen;
 struct King;
 
 impl PieceType {
-    fn from_char(c: &u8) -> Option<Self> {
+    pub fn from_char(c: &u8) -> Option<Self> {
         let up_c = (*c as char).to_ascii_uppercase();
         match up_c {
             'P' => Some(PieceType::PAWN),
@@ -41,7 +41,7 @@ impl PieceType {
         }
     }
 
-    fn get_char(&self) -> u8 {
+    pub fn get_char(&self) -> u8 {
         match self {
             PAWN => 'P' as u8,
             KNIGHT => 'N' as u8,

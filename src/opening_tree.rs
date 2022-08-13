@@ -2,17 +2,22 @@ use crate::*;
 // use std::fs::File;
 // use std::io::prelude::*;
 use serde::{Serialize, Deserialize};
-//use std::collections::HashMap;
+use std::collections::HashMap;
 
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OpeningTree {
-    root: Vec<(ChessMove, OpeningTree)>
+    root: HashMap<ChessMove, OpeningTree>,
+    position: Board
 }
 
 impl OpeningTree {
     pub fn new() -> Self {
-        OpeningTree {root: vec![]}
+        OpeningTree {root: HashMap::new(), position: Board::default()}
+    }
+
+    pub fn new_from_position(board: &Board) -> Self {
+        OpeningTree { root: HashMap::new(), position: *board }
     }
 
     // pub fn save(&self, file_name: &str) {
@@ -37,8 +42,15 @@ impl OpeningTree {
     }
 
     pub fn get_leafs(&self) -> Vec<FEN> {
-        let  board = Board::default();
-        if self.is_leaf() {return vec![board.to_fen()];}
-        todo!();
+        if self.is_leaf() {return vec![self.position.to_fen()];}
+        self.root.iter().fold(vec![], |mut acc, (_, variant)| {acc.append(&mut variant.get_leafs()); acc})
+    }
+
+    pub fn add_move(&mut self, chess_move: &ChessMove) {
+        if !self.root.contains_key(&chess_move) {
+            let mut board = self.position;
+            board.do_move(chess_move);
+            self.root.insert(*chess_move, OpeningTree::new_from_position(&board));
+        }
     }
 }

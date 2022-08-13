@@ -29,6 +29,6 @@ fn main() {
     // let game = Game::random(); \\Only basic rules
     // println!("{:?}", game);
 
-    let board = Board::default();
-    println!("{}", board.to_fen());
+    let mut white_opening = OpeningTree::new();
+    //white_opening.add_move(chess_move)
 }

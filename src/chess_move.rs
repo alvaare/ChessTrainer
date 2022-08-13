@@ -1,7 +1,7 @@
-use crate::*;
+use crate::{*, piece::PieceType};
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ChessMove {
     pub piece: Piece,
     pub start: Coord,
@@ -17,12 +17,21 @@ impl ChessMove {
     //     }
     // }
 
-    pub fn notation(&self) -> String {
-        let mut res = String::new();
+    pub fn notation(&self) -> Vec<u8> {
+        let mut res = vec![];
         if let Some(c) = self.piece.get_notation() {
-            res.push(c as char);
+            res.push(c);
         }
-        res.push_str(&self.end.get_str());
+        res.extend(self.end.get_str());
         res
+    }
+
+    pub fn from_notation(notation: &[u8], turn: Color) -> Self {
+        let piece_type = match PieceType::from_char(&notation[0]) {
+            Some(p) => p,
+            _ => PAWN
+        };
+        let piece = Piece {piece_type, color: turn};
+        todo!()
     }
 }

@@ -1,7 +1,8 @@
 use crate::*;
 use std::fmt;
+use std::str;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Board {
     position: [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE],
     turn: Color,
@@ -64,36 +65,36 @@ impl Board {
         board
     }
 
-    fn read_rank(&mut self, rank: &str, id_rank: isize) {
+    fn read_rank(&mut self, rank: &[u8], id_rank: isize) {
         let mut id_col: isize = 0;
-        for c in rank.bytes() {
+        for c in rank {
             match c {
                 b'/' | b' ' => return,
-                b'1'..=b'8' => id_col += ((c as char).to_digit(10).unwrap() -1) as isize,
+                b'1'..=b'8' => id_col += (c-b'0') as isize,
                 c => self.set(Coord(id_rank, id_col), Piece::from_char(&c))
             }
             id_col += 1;
         }
     }
 
-    fn read_ranks(&mut self, fen: &str) {
-        let ranks = fen.split('/');
+    fn read_ranks(&mut self, fen: &[u8]) {
+        let ranks = fen.split(|c| *c == b'/');
         for (id_rank, rank) in ranks.enumerate() {
             self.read_rank(rank, (7-id_rank) as isize);
         }
     }
 
-    fn read_turn(&mut self, fen: &str) {
+    fn read_turn(&mut self, fen: &[u8]) {
         self.turn = match fen {
-            "b" => BLACK,
-            "w" => WHITE,
+            [b'b'] => BLACK,
+            [b'w'] => WHITE,
             _ => panic!("The turn must be b or w")
         }
     }
 
-    fn read_castlings(&mut self, fen: &str) {
+    fn read_castlings(&mut self, fen: &[u8]) {
         self.castlings = [false; 4];
-        for c in fen.bytes() {
+        for c in fen {
             match c {
                 b'K' => self.castlings[0] = true,
                 b'Q' => self.castlings[1] = true,
@@ -104,24 +105,30 @@ impl Board {
         }
     }
 
-    fn read_en_passant(&mut self, fen: &str) {
+    fn read_en_passant(&mut self, fen: &[u8]) {
         self.en_passant = match fen {
-            "-" => None,
-            s => from_str_to_coord(s)
+            [b'-'] => None,
+            s => Coord::from_str(s)
         }
     }
 
-    fn read_clock(&mut self, fen: &str) {
-        self.halfmove_clock = fen.parse().unwrap();
+    fn read_clock(&mut self, fen: &[u8]) {
+        self.halfmove_clock = match str::from_utf8(fen) {
+            Ok(v) => v.parse().unwrap(),
+            _  => unreachable!()  
+        }
     }
 
-    fn read_move(&mut self, fen: &str) {
-        self.move_count = fen.parse().unwrap();
+    fn read_move(&mut self, fen: &[u8]) {
+        self.move_count = match str::from_utf8(fen) {
+            Ok(v) => v.parse().unwrap(),
+            _  => unreachable!()  
+        }
     }
 
     pub fn from_fen(fen: &FEN) -> Self {
         let mut board = Board::new();
-        let vec: Vec<&str> = fen.split_whitespace().collect();
+        let vec: Vec<&[u8]> = fen.split(|c| c.is_ascii_whitespace()).collect();
         board.read_ranks(vec[0]);
         board.read_turn(vec[1]);
         board.read_castlings(vec[2]);
@@ -168,91 +175,97 @@ impl Board {
 
     pub fn do_move(&mut self, chess_move: &ChessMove) {
         self.set(chess_move.start, None);
+        let move_is_capture = !self.is_square_free(&chess_move.end);
         self.set(chess_move.end, Some(chess_move.piece));
         self.turn = change_color(&self.turn);
+        self.halfmove_clock += 1;
         if self.turn == Color::WHITE {
             self.move_count += 1;
         }
+        if chess_move.piece.piece_type == PAWN || move_is_capture {
+            self.halfmove_clock = 0;
+        }
     }
 
-    fn write_rank(&self, id_rank: usize) -> String {
-        let mut res = String::new();
+    fn write_rank(&self, id_rank: usize) -> Vec<u8> {
+        let mut res = vec![];
         let mut acc = 0;
         for square in self.position[id_rank] {
             match square {
                 Some(piece) =>  {if acc>0 {
-                                            res.push((('0' as u8) + acc) as char);
+                                            res.push(b'0' + acc);
                                        }
-                                        res.push(piece.to_char() as char); 
+                                        res.push(piece.to_char()); 
+                                        acc = 0;
                                     }
                 None => acc += 1
             }
         }
         if acc>0 {
-            res.push((('0' as u8) + acc) as char);
+            res.push(b'0' + acc);
         }
         res
     }
 
-    fn write_ranks(&self) -> String {
-        let mut res = String::new();
+    fn write_ranks(&self) -> Vec<u8> {
+        let mut res = vec![];
         for i in 0..8 {
-            res.push_str(&self.write_rank(7-i));
+            res.append(&mut self.write_rank(7-i));
             if i != 7 {
-                res.push('/');
+                res.push(b'/');
             }
         }
         res
     }
 
-    fn write_turn(&self) -> String {
+    fn write_turn(&self) -> Vec<u8> {
         match self.turn {
-            WHITE => "w".to_string(),
-            BLACK => "b".to_string()
+            WHITE => vec![b'w'],
+            BLACK => vec![b'b']
         }
     }
 
-    fn write_castlings(&self) -> String {
+    fn write_castlings(&self) -> Vec<u8> {
         if self.castlings == [false; 4] {
-            return "-".to_string();
+            return vec![b'-'];
         }
-        let mut res = String::new();
-        if self.castlings[0] {res.push('K');}
-        if self.castlings[1] {res.push('Q');}
-        if self.castlings[2] {res.push('k');}
-        if self.castlings[3] {res.push('q');}
+        let mut res = vec![];
+        if self.castlings[0] {res.push(b'K');}
+        if self.castlings[1] {res.push(b'Q');}
+        if self.castlings[2] {res.push(b'k');}
+        if self.castlings[3] {res.push(b'q');}
         res
     }
 
-    fn write_en_passant(&self) -> String {
+    fn write_en_passant(&self) -> Vec<u8> {
         if let Some(sq) = self.en_passant {
             sq.get_str()
         }
         else {
-            "-".to_string()
+            vec![b'-']
         }
     }
 
     pub fn to_fen(&self) -> FEN {
         let mut fen: FEN = FEN::new();
-        const SEPARATOR: char = ' ';
+        const SEPARATOR: u8 = b' ';
 
-        fen.push_str(&self.write_ranks());
+        fen.extend(self.write_ranks());
         fen.push(SEPARATOR);
 
-        fen.push_str(&self.write_turn());
+        fen.extend( self.write_turn());
         fen.push(SEPARATOR);
 
-        fen.push_str(&self.write_castlings());
+        fen.extend(self.write_castlings());
         fen.push(SEPARATOR);
 
-        fen.push_str(&self.write_en_passant());
+        fen.extend(self.write_en_passant());
         fen.push(SEPARATOR);
 
-        fen.push_str(&self.halfmove_clock.to_string());
+        fen.extend(self.halfmove_clock.to_string().bytes());
         fen.push(SEPARATOR);
 
-        fen.push_str(&self.move_count.to_string());
+        fen.extend(self.move_count.to_string().bytes());
         fen
 
         
