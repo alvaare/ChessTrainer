@@ -31,4 +31,5 @@ fn main() {
 
     let mut white_opening = OpeningTree::new();
     //white_opening.add_move(chess_move)
+    let mut parser = Parser::new("small_chess_database.pgn");
 }

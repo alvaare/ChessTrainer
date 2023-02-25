@@ -138,19 +138,19 @@ impl Board {
         board
     }
 
-    pub fn available_moves(&self) -> Vec<ChessMove> {
-        let mut av_moves = Vec::<ChessMove>::new();
-        for (i, line) in self.position.iter().enumerate() {
-            for (j, piece) in line.iter().enumerate() {
-                if let Some(p) = piece {
-                    if p.color == self.turn {
-                        av_moves.append(&mut p.available_moves(&self, &Coord(i as isize,j as isize)));
-                    }
-                }
-            }
-        }
-        av_moves
-    }
+    // pub fn available_moves(&self) -> Vec<ChessMove> {
+    //     let mut av_moves = Vec::<ChessMove>::new();
+    //     for (i, line) in self.position.iter().enumerate() {
+    //         for (j, piece) in line.iter().enumerate() {
+    //             if let Some(p) = piece {
+    //                 if p.color == self.turn {
+    //                     av_moves.append(&mut p.available_moves(&self, &Coord(i as isize,j as isize)));
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     av_moves
+    // }
 
     pub fn is_square_free(&self, coord: &Coord) -> bool {
         if !coord.is_correct() {return false}

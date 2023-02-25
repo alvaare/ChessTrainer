@@ -93,3 +93,6 @@ pub use chess_move::ChessMove;
 
 mod opening_tree;
 pub use opening_tree::OpeningTree;
+
+mod parser;
+pub use parser::Parser;
